@@ -508,7 +508,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
       .attr("class", "title")
       .style("margin-bottom", "20px")
       .style("margin-bottom", "10px")
-      .html("<span>Dataset View (each of the " + formatNumber(flight.size()) + " pixels represents a data record (White = Selected, Black = Not Selected, Red = Out of Bounds)</span><br><span style='font-style: italic; font-size: 14px; color: red;'>Move the mouse over the canvas below to see individual data records</span>");
+      .html("<span>Dataset View – Each of the " + formatNumber(flight.size()) + " pixels represents a data record (White = Selected, Black = Not Selected, Red = Out of Bounds)</span><br><span style='font-style: italic; font-size: 14px; color: red;'>Move the mouse over the canvas below to see individual data records</span>");
 
   // BoE: add canvas element and mouse handler
   canvas = canvasDiv
