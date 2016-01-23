@@ -246,11 +246,11 @@ function timeLogger() {
   };
 };
 
-// BoE comment: start two time loggers
+// BoE: start two time loggers
 var tl = timeLogger();
 var tl2 = timeLogger();
 
-// BoE comment: get the data
+// BoE: get the data
 d3.csv("xFlights-3m.csv", function(error, flights) {
 
   // BoE: add usage example of time logger
@@ -281,7 +281,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
   });
 
   // Create the crossfilter for the relevant dimensions and groups.
-  // BoE comment: the "tl" stuff below are adds to the original example, to compute time consumed at various steps
+  // BoE: the "tl" stuff below are adds to the original example, to compute time consumed at various steps
   tl.reset();
   var flight = crossfilter(flights);
   tl.log("crossfilter constructor");
@@ -349,7 +349,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
       };
 
   /*
-  // BoE comment: uncomment this to see the day related variables
+  // BoE: uncomment this to see the day related variables
   console.log("workDays", workDays)
   console.log("weekendDays", weekendDays)
   console.log("dayNumbers", dayNumbers)
@@ -459,7 +459,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
     })
 
 
-  // BoE comment: update the state of the day selection radio buttons and checkboxes (called after "change" events from those elements)
+  // BoE: update the state of the day selection radio buttons and checkboxes (called after "change" events from those elements)
   function updateDaySelection() {
     // BoE: update checkboxes
     d3.selectAll("input[type=checkbox][name=days]")
@@ -469,24 +469,24 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
         return days[day].state;
       })
 
-    // BoE comment: process selected days
+    // BoE: process selected days
     var workDayCount = workDays.reduce(function(p, c) { return (days[c].state) ? p + 1 : p }, 0);
     var weekendDayCount = weekendDays.reduce(function(p, c) { return (days[c].state) ? p + 1 : p }, 0);
 
-    // BoE comment: determine day type
+    // BoE: determine day type
     var dayType = "someDays";
     if ((workDayCount + weekendDayCount) == 7) dayType = "allDays"
     else if (workDayCount == 5 && weekendDayCount == 0) dayType = "workDays"
     else if (workDayCount == 0 && weekendDayCount == 2) dayType = "weekendDays"
 
-    // BoE comment: set the selected radio button
+    // BoE: set the selected radio button
     d3.selectAll("input[type=radio][value=" + dayType + "]").property("checked", true);
 
-    // BoE comment: create/update day number filter
+    // BoE: create/update day number filter
     dayNumber.filter(function(d) { return days[dayNumbers[d]].state; })
   }
 
-  // BoE comment: create canvas element that holds one record per canvas pixel
+  // BoE: create canvas element that holds one record per canvas pixel
   var canvasWidth = d3.select("body").property("clientWidth") - 10,
       canvasHeight = Math.ceil(flight.size() / canvasWidth),
       canvas,
@@ -526,7 +526,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
             y = Math.round(mouse[1]),
             index = y * canvasWidth + x;
 
-        // BoE comment: event handler delivers mouse mousemove events outside the canvas sometimes (don't know why);
+        // BoE: event handler delivers mouse mousemove events outside the canvas sometimes (don't know why);
         //     therefore, ensure that only valid x and y values are processed
         if (x < 0 || x > canvasWidth - 1 || y < 0 || y > canvasHeight -1) {
           currentLabel.html("&nbsp;");
@@ -552,13 +552,13 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
         currentLabel.html("&nbsp;");
       })
 
-  // BoE comment: create label for mousemove
+  // BoE: create label for mousemove
   currentLabel = canvasDiv.append("label").html("&nbsp;");
 
-  // BoE comment: get context to canvas elem
+  // BoE: get context to canvas elem
   ctx = canvas.node().getContext('2d');
 
-  // BoE comment: this code defines the four charts in an array
+  // BoE: this code defines the four charts in an array
   var charts = [
 
     barChart()
@@ -599,7 +599,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
   // .chart elements in the DOM, bind the charts to the DOM and render them.
   // We also listen to the chart's brush events to update the display.
   var chart = d3.selectAll(".chart")
-      // BoE comment: the charts array defined above are provided as data to the d3 selection of ".charts"
+      // BoE: the charts array defined above are provided as data to the d3 selection of ".charts"
       .data(charts)
       .each(function(chart) { 
         chart
@@ -619,7 +619,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
   d3.selectAll("#total")
       .text(formatNumber(flight.size()));
 
-  // BoE comment: initial render
+  // BoE: initial render
   renderAll();
 
   // BoE debug...
@@ -638,13 +638,13 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
 
   // Renders the specified chart or list.
   function render(method) {
-      // BoE comment: "method" is the "d" value of data binding to chart above, which happens to be the chart function from barChart
+      // BoE: "method" is the "d" value of data binding to chart above, which happens to be the chart function from barChart
     d3.select(this).call(method);
   }
 
   // Whenever the brush moves, re-rendering everything.
   function renderAll() {
-    // BoE comment: uncomment the next lines to see the what's being rendered
+    // BoE: uncomment the next lines to see the what's being rendered
     //console.log("renderAll", chart[0].length, list[0].length, all.value())
     //chart.each(function(d, i) { console.log("this", this, "d", d, "i", i) })
     chart.each(render); // render is called with this set to div and d set to the chart function from barChart
@@ -697,7 +697,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
         d.substring(6, 8));
   }
 
-  // BoE comment: this (window.resetAll) isn't used, therefore
+  // BoE: this (window.resetAll) isn't used, therefore
   //    repurposed this to reset all filters by javascript triggered by a new "a" tag in the DOM
   window.resetAll = function() {
     var filters = [null, null, null, null];
@@ -707,13 +707,13 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
     renderAll();
   };
 
-  // BoE comment: resets the filter for a particular dimension
+  // BoE: resets the filter for a particular dimension
   window.reset = function(i) {
     charts[i].filter(null);
     renderAll();
   };
 
-  // BoE comment: this looks really wasteful – every cell is a div, why not just use a html5 table?
+  // BoE: this looks really wasteful – every cell is a div, why not just use a html5 table?
   function flightList(div) {
 
     var flightsByDate = nestByDate.entries(date.top(10));
@@ -764,7 +764,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
   }
 
   function barChart() {
-    // BoE comment: barChart.id is shared by all instances of barChart's chart, effectively an instance counter
+    // BoE: barChart.id is shared by all instances of barChart's chart, effectively an instance counter
     if (!barChart.id) barChart.id = 0;
 
     var margin = {top: 10, right: 10, bottom: 20, left: 10},
@@ -795,14 +795,14 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
       yMax = 0;
       y.domain([0, yMax == 0 ? group.top(1)[0].value : yMax]); // set y domain to max value in this group
 
-      // BoE comment: why is this done using "each"? There is only one div per chart; therefore the construct "div.each" will
+      // BoE: why is this done using "each"? There is only one div per chart; therefore the construct "div.each" will
       //    only be executed once
       div.each(function() {
         var div = d3.select(this),
             g = div.select("g");
 
         // Create the skeletal chart.
-        // BoE comment: this is only executed once, at init, when there is nothing in the group
+        // BoE: this is only executed once, at init, when there is nothing in the group
         if (g.empty()) {
           div.select(".title").append("a")
               .attr("href", "javascript:reset(" + id + ")")
@@ -816,14 +816,14 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
             .append("g")
               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-          // BoE comment: reset the clip path to full width
+          // BoE: reset the clip path to full width
           g.append("clipPath")
               .attr("id", "clip-" + id)
             .append("rect")
               .attr("width", width)
               .attr("height", height);
 
-          // BoE comment: generate two paths, one background, one foreground
+          // BoE: generate two paths, one background, one foreground
           g.selectAll(".bar")
               .data(["background", "foreground"])
             .enter().append("path")
@@ -831,11 +831,11 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
               // assign all the data in the group to the path
               .datum(group.all());
 
-          // BoE comment: assign the clip path to the foreground bars
+          // BoE: assign the clip path to the foreground bars
           g.selectAll(".foreground.bar")
               .attr("clip-path", "url(#clip-" + id + ")");
 
-          // BoE comment: add the x-axis to the svg group
+          // BoE: add the x-axis to the svg group
           g.append("g")
               .attr("class", "axis")
               .attr("transform", "translate(0," + height + ")")
@@ -848,7 +848,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
         }
 
         // Only redraw the brush if set externally.
-        // BoE comment: at init, the **Date** chart has an externally set brush;
+        // BoE: at init, the **Date** chart has an externally set brush;
         // in this extended example, the **Time of Day** chart also has an externally set brush
         if (brushDirty) {
           brushDirty = false;
@@ -866,11 +866,11 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
           }
         }
 
-        // BoE comment: this sets the **d** attribute on the path
+        // BoE: this sets the **d** attribute on the path
         g.selectAll(".bar").attr("d", barPath);
       });
 
-      // BoE comment: the barPath function is called as usual with the d, i, a arguments 
+      // BoE: the barPath function is called as usual with the d, i, a arguments 
       //   (d being called **groups** here, the other args not used)
       function barPath(groups) {
         var path = [],
@@ -881,12 +881,12 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
           d = groups[i];
           path.push("M", x(d.key), ",", height, "V", y(d.value), "h9V", height);
         }
-        // BoE comment: uncomment the next line to see the neat path array that has been generated
+        // BoE: uncomment the next line to see the neat path array that has been generated
         //console.log("path", path)
         return path.join("");
       }
 
-      // BoE comment: the resizePath function defines the look of the brush "handles" on the left and right side of the brush
+      // BoE: the resizePath function defines the look of the brush "handles" on the left and right side of the brush
       function resizePath(d) {
         var e = +(d == "e"),
             x = e ? 1 : -1,
@@ -903,7 +903,7 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
       }
     }
 
-    // BoE comment: the .chart below threw me for a loop at first; turns out the app is registering multiple brush handlers;
+    // BoE: the .chart below threw me for a loop at first; turns out the app is registering multiple brush handlers;
     //   see above for the first instance of brush handlers; to allow multiple handlers to be registered on the same event, 
     //   d3 requires a "namespace identifier" on the subsequent event handlers; here "chart" is used as a namespace indicator
     //   alse see: http://stackoverflow.com/questions/32459420/what-does-d3-brush-onbrush-chat-means
@@ -912,17 +912,17 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
       div.select(".title a").style("display", null);
     });
 
-    // BoE comment: uncomment the next like to see another brush handler in action using a dummy namespace
+    // BoE: uncomment the next like to see another brush handler in action using a dummy namespace
     //brush.on("brush.whatever", function() { console.log("brush.whatever") })
 
-    // BoE comment: this "brush.chart" event handler fires before the "brush" handler fires above; 
+    // BoE: this "brush.chart" event handler fires before the "brush" handler fires above; 
     //    this particular handler just sets the filter; 
     //    the other handler updates all charts
     brush.on("brush.chart", function() { 
       var g = d3.select(this.parentNode),
           extent = brush.extent(); // extent contains the domain (x.invert) of the brush
 
-      // BoE comment: handle rounding of extent (allow only integers)
+      // BoE: handle rounding of extent (allow only integers)
       if (round) g.select(".brush")
           .call(brush.extent(extent = extent.map(round)))
         .selectAll(".resize")
@@ -931,24 +931,24 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
           .attr("x", x(extent[0])) // set clip rect x pos
           .attr("width", x(extent[1]) - x(extent[0])); // set clip rect width
 
-      // BoE comment: set a new filter range
+      // BoE: set a new filter range
       dimension.filterRange(extent);
     });
 
     brush.on("brushend.chart", function() {
       if (brush.empty()) {
-        // BoE comment: if brush is empty, invalidate the clip rect (show all foreground bars), and remove the dimension filter
+        // BoE: if brush is empty, invalidate the clip rect (show all foreground bars), and remove the dimension filter
         var div = d3.select(this.parentNode.parentNode.parentNode);
 
-        // BoE comment: remove the reset "a" element
+        // BoE: remove the reset "a" element
         div.select(".title a").style("display", "none");
 
-        // BoE comment: invalidate the clip rect (thereby show all foreground blue bars)
+        // BoE: invalidate the clip rect (thereby show all foreground blue bars)
         div.select("#clip-" + id + " rect")
             .attr("x", null) // remove the x attribute which will render the clipRect invalid
             .attr("width", "100%");
         
-        // BoE comment: remove the dimension's filter
+        // BoE: remove the dimension's filter
         dimension.filterAll();
       }
     });
@@ -1006,12 +1006,11 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
       return chart;
     };
 
-    // BoE comment: the d3 rebind function moves the "on" method from the "brush" object/function to the "chart" object/function;
+    // BoE: the d3 rebind function moves the "on" method from the "brush" object/function to the "chart" object/function;
     // it then returns the "chart" function/object
     return d3.rebind(chart, brush, "on");
   }
 });
 
 </script>
-=======
->>>>>>> 2c3afc8dc174628a0b5c7a1b163737a557c23f34
+
