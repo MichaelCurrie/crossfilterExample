@@ -81,7 +81,7 @@ function create_crossfilter(data_rows) {
     // USER DIMENSION 1
     // delay dimension
     var delay = data_xfilter.dimension(function(d) {
-        return Math.max(-60, Math.min(149, d.delay));
+        return d.delay;
     }); // delay dim
     var delays = delay.group(function(d) {
         return Math.floor(d / 10) * 10;
@@ -91,7 +91,7 @@ function create_crossfilter(data_rows) {
     // USER DIMENSION 2
     // distances dimension
     var distance = data_xfilter.dimension(function(d) {
-        return Math.min(1999, d.distance);
+        return d.distance;
     }); // distance dim
     var distances = distance.group(function(d) {
         return Math.floor(d / 50) * 50;
@@ -106,8 +106,6 @@ function create_crossfilter(data_rows) {
     var dayNumbers = dayNumber.group(function(d) {
         return d;
     });
-
-    console.log(dayNumber)
 
     // Date selection radio buttons
     // Day selection variables
@@ -476,7 +474,11 @@ function create_crossfilter(data_rows) {
     // Get context to canvas elem
     ctx = canvas.node().getContext('2d');
 
-    console.log("here we are!")
+    var delay_min = d3.min(data_rows, function(d) { return +d.delay});
+    var delay_max = d3.max(data_rows, function(d) { return +d.delay});
+
+    var distance_min = d3.min(data_rows, function(d) { return +d.distance});
+    var distance_max = d3.max(data_rows, function(d) { return +d.distance});
 
     // BoE: this code defines the four charts in an array
     var charts = [
@@ -493,14 +495,14 @@ function create_crossfilter(data_rows) {
         .dimension(delay)
         .group(delays)
         .x(d3.scale.linear()
-            .domain([-60, 150])
+            .domain([delay_min, delay_max])
             .rangeRound([0, 10 * 21])), // 21 delay groups, 210 pixels total
 
         barChart()
         .dimension(distance)
         .group(distances)
         .x(d3.scale.linear()
-            .domain([0, 2000])
+            .domain([distance_min, distance_max])
             .rangeRound([0, 10 * 40])), // 40 distance groups
 
         barChart()
