@@ -1,5 +1,7 @@
 // Crossfilter Display
 //
+// By date, hour, and two other variables
+//
 "use strict";
 
 // Ensure at least 790px height if running in an iframe (bl.ocks)
@@ -7,8 +9,19 @@
 d3.select(self.frameElement).transition().duration(500).style("height", "790px");
 
 // Get the data
-d3.csv(CROSSFILTER_PARAMETERS.data_file, function(error, flights) {
+d3.csv(CROSSFILTER_PARAMETERS.data_file, function(error, data_rows) {
+    if (error) { console.log(error); }
 
+    // Set the titles in the report
+    document.title = CROSSFILTER_PARAMETERS.report_title;
+    report_title.innerHTML = CROSSFILTER_PARAMETERS.report_title;
+
+    // Create the crossfilter
+    create_crossfilter(data_rows);
+});
+
+       
+function create_crossfilter(data_rows) {
   // BoE: add array that holds the currently selected "in-filter" selected records
   var selected = []; 
 
@@ -24,7 +37,7 @@ d3.csv(CROSSFILTER_PARAMETERS.data_file, function(error, flights) {
       .key(function(d) { return d3.time.day(d.date); });
 
   // A little coercion, since the CSV is untyped.
-  flights.forEach(function(d, i) {
+  data_rows.forEach(function(d, i) {
     d.index = i;
     d.date = parseDate(d.date);
     d.delay = +d.delay;
@@ -33,7 +46,7 @@ d3.csv(CROSSFILTER_PARAMETERS.data_file, function(error, flights) {
   });
 
   // Create the crossfilter for the relevant dimensions and groups.
-  var flight = crossfilter(flights);
+  var flight = crossfilter(data_rows);
   var all = flight.groupAll();
 
   // date dimension
@@ -270,7 +283,7 @@ d3.csv(CROSSFILTER_PARAMETERS.data_file, function(error, flights) {
           return;          
         }
 
-        var item = flights[index],
+        var item = data_rows[index],
             dateText = formatDateWithDay(item.date),
             timeText = formatTime(item.date);
 
@@ -386,9 +399,9 @@ d3.csv(CROSSFILTER_PARAMETERS.data_file, function(error, flights) {
     // BoE: update the "selected" array, which holds the currently selected (in-filter) items
     selected = date.top(Infinity);
 
-    // BoE: set the selected status in "flights" ("flights" is the data source)
-    flights.forEach(function(d) { d.selected = false; }); // first clear all
-    selected.forEach(function(d) { flights[d.index].selected = true; }) // then set some 
+    // BoE: set the selected status in "data_rows" ("data_rows" is the data source)
+    data_rows.forEach(function(d) { d.selected = false; }); // first clear all
+    selected.forEach(function(d) { data_rows[d.index].selected = true; }) // then set some 
 
     // BoE: clear canvas
     ctx.fillStyle = "rgb(0,0,0)";
@@ -733,4 +746,4 @@ d3.csv(CROSSFILTER_PARAMETERS.data_file, function(error, flights) {
     // it then returns the "chart" function/object
     return d3.rebind(chart, brush, "on");
   }
-});
+}
