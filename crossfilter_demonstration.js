@@ -4,7 +4,7 @@
 //
 "use strict";
 
-// Parse the date.  Assume it is the year 2001. ("2001" not shown to user)
+// Parse the date.  Assume it is the year 2001.
 function parseDate(d) {  // (parseDate is like d3.time.format, but faster)
     return new Date(2001,
         d.substring(0, 2) - 1,
@@ -205,13 +205,6 @@ function create_crossfilter(data_rows) {
             text: "Work Days",
             order: 1
         },
-        someDays: {
-            state: false,
-            name: "dayType",
-            text: "Some Days",
-            order: 3,
-            last: true
-        }
     };
 
     /*
@@ -316,14 +309,6 @@ function create_crossfilter(data_rows) {
             var dayType = elem.property("value");
             switch (dayType) {
                 case "allDays":
-                case "someDays":
-                    workDays.forEach(function(day) {
-                        days[day].state = true;
-                    })
-                    weekendDays.forEach(function(day) {
-                        days[day].state = true;
-                    })
-                    break;
                 case "workDays":
                     workDays.forEach(function(day) {
                         days[day].state = true;
@@ -385,7 +370,7 @@ function create_crossfilter(data_rows) {
         }, 0);
 
         // BoE: determine day type
-        var dayType = "someDays";
+        var dayType;
         if ((workDayCount + weekendDayCount) == 7) dayType = "allDays"
         else if (workDayCount == 5 && weekendDayCount == 0) dayType = "workDays"
         else if (workDayCount == 0 && weekendDayCount == 2) dayType = "weekendDays"
@@ -510,9 +495,10 @@ function create_crossfilter(data_rows) {
         .group(dates)
         .round(d3.time.day.round) // ensures whole days
         .x(d3.time.scale()
-            .domain([new Date(2001, 0, 1), new Date(2001, 3, 1)])
+            .domain([new Date(2001, 0, 1), new Date(2002, 0, 1)]) // full year
             .rangeRound([0, 10 * 90]))
-        .filter([new Date(2001, 1, 1), new Date(2001, 2, 1)])
+        // set an arbitrary filter from Feb to Mar to start as a demonstration
+        .filter([new Date(2001, 1, 1), new Date(2001, 2, 1)]) 
     ];
 
 
