@@ -1,46 +1,13 @@
+// Crossfilter Display
+//
 "use strict";
 
-// ensure at least 790px height if running in an iframe (bl.ocks)
+// Ensure at least 790px height if running in an iframe (bl.ocks)
 // http://bl.ocks.org/mbostock/1093025
 d3.select(self.frameElement).transition().duration(500).style("height", "790px");
 
-// BoE: add time logger function
-function timeLogger() {
-  if (timeLogger.id == undefined) timeLogger.id = 0;
-  else ++timeLogger.id;
-
-  var events = [];
-  var initTs = new Date().getTime();
-  var currTs = initTs;
-
-  return {
-    log: function (event) {
-      var ts = new Date().getTime();
-      var duration = ts - currTs;
-      events.push({ event: event, duration: duration })
-      currTs = ts;
-    },
-    reset: function() {
-      currTs = new Date().getTime();
-    },
-    results: function () {
-      var results = events.concat([{ event: "total elapsed", duration: new Date().getTime() - initTs }]);
-      results.forEach(function(d) { console.log(d.event, " --> ", d.duration)})
-      return results;
-    }
-  };
-};
-
-// BoE: start two time loggers
-var tl = timeLogger();
-var tl2 = timeLogger();
-
-// BoE: get the data
-d3.csv("xFlights-3m.csv", function(error, flights) {
-
-  // BoE: add usage example of time logger
-  tl2.log("data load");
-  tl2.results();
+// Get the data
+d3.csv(CROSSFILTER_PARAMETERS.data_file, function(error, flights) {
 
   // BoE: add array that holds the currently selected "in-filter" selected records
   var selected = []; 
@@ -66,52 +33,32 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
   });
 
   // Create the crossfilter for the relevant dimensions and groups.
-  // BoE: the "tl" stuff below are adds to the original example, to compute time consumed at various steps
-  tl.reset();
   var flight = crossfilter(flights);
-  tl.log("crossfilter constructor");
   var all = flight.groupAll();
-  tl.log("flight.groupAll")
 
   // date dimension
-  tl.reset();
   var date = flight.dimension(function(d) { return d.date; }); // date dim
-  tl.log("date dimension");
   var dates = date.group(d3.time.day); // date group
-  tl.log("date.group")
   dates.groupId = "dates";
 
   // hour dimension
-  tl.reset();
   var hour = flight.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }); // hour dim
-  tl.log("hour dimension")
   var hours = hour.group(Math.floor); // hour group
-  tl.log("hour.group()");
   hours.groupId = "hours";
 
   // delay dimension
-  tl.reset();
   var delay = flight.dimension(function(d) { return Math.max(-60, Math.min(149, d.delay)); }); // delay dim
-  tl.log("delay dimension");
   var delays = delay.group(function(d) { return Math.floor(d / 10) * 10; }); // delay group
-  tl.log("delay.group")
   delays.groupId = "delays";
 
   // distances dimension
-  tl.reset()
   var distance = flight.dimension(function(d) { return Math.min(1999, d.distance); }); // distance dim
-  tl.log("distance dimension")
   var distances = distance.group(function(d) { return Math.floor(d / 50) * 50; }); // distance group
-  tl.log("distance.group")
   distances.groupId = "distances";
 
   // BoE: add new day dimension
-  tl.reset();
   var dayNumber = flight.dimension(function(d) { return d.date.getDay(); });
-  tl.log("dayNumber dimension");
   var dayNumbers = dayNumber.group(function(d) { return d; });
-  tl.log("dayNumber.group")
-  console.log("--", tl.results())
 
   // BoE: add day selection variables
   var days = { 
@@ -436,41 +383,32 @@ d3.csv("xFlights-3m.csv", function(error, flights) {
     list.each(render);
     d3.select("#active").text(formatNumber(all.value()));
 
-    var tl3 = timeLogger();
     // BoE: update the "selected" array, which holds the currently selected (in-filter) items
     selected = date.top(Infinity);
-    tl3.log("date.top(Infinity)")
 
     // BoE: set the selected status in "flights" ("flights" is the data source)
     flights.forEach(function(d) { d.selected = false; }); // first clear all
     selected.forEach(function(d) { flights[d.index].selected = true; }) // then set some 
 
     // BoE: clear canvas
-    tl3.reset();
     ctx.fillStyle = "rgb(0,0,0)";
     ctx.fillRect (0, 0, canvasWidth, canvasHeight);
-    tl3.log("filling canvas background")
 
     // BoE: add red out of bounds pixels 
-    tl3.reset();
     var xSpan = (canvasWidth * canvasHeight) % flight.size();
     var x = canvasWidth - xSpan;
     var y = canvasHeight - 1;
     ctx.fillStyle = "rgb(255, 0, 0)";
     ctx.fillRect(x, y, xSpan, 1);
-    tl3.log("setting red pixels")
 
     
     // BoE add: draw white pixel for each active element
-    tl3.reset();
     ctx.fillStyle = "rgb(255,255,255)";
     selected.forEach(function(d) {
       var x = d.index % canvasWidth;
       var y = Math.floor(d.index / canvasWidth)
       ctx.fillRect(x, y, 1, 1 );
     })
-    tl3.log("setting canvas pixels");
-    tl3.results();
   }
 
   // Like d3.time.format, but faster.
