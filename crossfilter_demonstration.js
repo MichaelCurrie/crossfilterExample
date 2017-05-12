@@ -212,12 +212,12 @@ function create_crossfilter(data_rows) {
     ];
 
 
-
     // Given our array of charts, which we assume are in the same order as the
     // .chart elements in the DOM, bind the charts to the DOM and render them.
     // We also listen to the chart's brush events to update the display.
     var chart = d3.selectAll(".chart")
-        // BoE: the charts array defined above are provided as data to the d3 selection of ".charts"
+        // The charts array defined above are provided as data to
+        // the d3 selection of ".charts"
         .data(charts)
         .each(function(chart) {
             chart
@@ -229,15 +229,15 @@ function create_crossfilter(data_rows) {
                 });
         });
 
-    // Render the initial lists.
+    // Render the initial lists
     var list = d3.selectAll(".list")
         .data([resultsList]);
 
-    // Render the total.
+    // Render the total
     d3.selectAll("#total")
         .text(formatNumber(data_xfilter.size()));
 
-    // BoE: initial render
+    // Initial render
     renderAll();
 
     // BoE debug...
@@ -262,7 +262,8 @@ function create_crossfilter(data_rows) {
 
     // Renders the specified chart or list.
     function render(method) {
-        // BoE: "method" is the "d" value of data binding to chart above, which happens to be the chart function from barChart
+        // "method" is the "d" value of data binding to chart above,
+        // which happens to be the chart function from barChart
         d3.select(this).call(method);
     }
 
@@ -271,14 +272,18 @@ function create_crossfilter(data_rows) {
         // BoE: uncomment the next lines to see the what's being rendered
         //console.log("renderAll", chart[0].length, list[0].length, all.value())
         //chart.each(function(d, i) { console.log("this", this, "d", d, "i", i) })
-        chart.each(render); // render is called with this set to div and d set to the chart function from barChart
+
+        // render is called with this set to div and d set to the
+        // chart function from barChart
+        chart.each(render); 
         list.each(render);
         d3.select("#active").text(formatNumber(all.value()));
 
-        // BoE: update the "selected" array, which holds the currently selected (in-filter) items
+        // Update the "selected" array, which holds
+        // the currently selected (in-filter) items
         selected = date.top(Infinity);
 
-        // BoE: set the selected status in "data_rows" ("data_rows" is the data source)
+        // Set the selected status in the data source ("data_rows")
         data_rows.forEach(function(d) {
             d.selected = false;
         }); // first clear all
@@ -286,11 +291,11 @@ function create_crossfilter(data_rows) {
             data_rows[d.index].selected = true;
         }) // then set some 
 
-        // BoE: clear canvas
+        // Clear canvas
         ctx.fillStyle = "rgb(0,0,0)";
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        // BoE: add red out of bounds pixels 
+        // Add red out of bounds pixels 
         var xSpan = (canvasWidth * canvasHeight) % data_xfilter.size();
         var x = canvasWidth - xSpan;
         var y = canvasHeight - 1;
@@ -298,7 +303,7 @@ function create_crossfilter(data_rows) {
         ctx.fillRect(x, y, xSpan, 1);
 
 
-        // BoE add: draw white pixel for each active element
+        // Add: draw white pixel for each active element
         ctx.fillStyle = "rgb(255,255,255)";
         selected.forEach(function(d) {
             var x = d.index % canvasWidth;
@@ -307,8 +312,9 @@ function create_crossfilter(data_rows) {
         })
     }
 
-    // Like d3.time.format, but faster.
-    function parseDate(d) {
+    
+    // Parse the date.  Assume it is the year 2001. ("2001" not shown to user)
+    function parseDate(d) {  // (parseDate is like d3.time.format, but faster)
         return new Date(2001,
             d.substring(0, 2) - 1,
             d.substring(2, 4),
@@ -331,13 +337,14 @@ function create_crossfilter(data_rows) {
         renderAll();
     };
 
-    // BoE: resets the filter for a particular dimension
+    // Resets the filter for a particular dimension
     window.reset = function(i) {
         charts[i].filter(null);
         renderAll();
     };
 
-    // BoE: this looks really wasteful – every cell is a div, why not just use a html5 table?
+    // BoE: this looks really wasteful – every cell is a div,
+    // why not just use a html5 table?
     function resultsList(div) {
 
         var resultsByDate = nestByDate.entries(date.top(10));
@@ -358,41 +365,41 @@ function create_crossfilter(data_rows) {
 
             date.exit().remove();
 
-            var flight = date.order().selectAll(".flight")
+            var results_row = date.order().selectAll(".results_list_row")
                 .data(function(d) {
                     return d.values;
                 }, function(d) {
                     return d.index;
                 });
 
-            var flightEnter = flight.enter().append("div")
-                .attr("class", "flight");
+            var results_row_all = results_row.enter().append("div")
+                .attr("class", "results_list_row");
 
-            flightEnter.append("div")
+            results_row_all.append("div")
                 .attr("class", "time")
                 .text(function(d) {
                     return formatTime(d.date);
                 });
 
-            flightEnter.append("div")
+            results_row_all.append("div")
                 .attr("class", "origin")
                 .text(function(d) {
                     return d.origin;
                 });
 
-            flightEnter.append("div")
+            results_row_all.append("div")
                 .attr("class", "destination")
                 .text(function(d) {
                     return d.destination;
                 });
 
-            flightEnter.append("div")
+            results_row_all.append("div")
                 .attr("class", "distance")
                 .text(function(d) {
                     return formatNumber(d.distance) + " mi.";
                 });
 
-            flightEnter.append("div")
+            results_row_all.append("div")
                 .attr("class", "delay")
                 .classed("early", function(d) {
                     return d.delay < 0;
@@ -401,9 +408,9 @@ function create_crossfilter(data_rows) {
                     return formatChange(d.delay) + " min.";
                 });
 
-            flight.exit().remove();
+            results_row.exit().remove();
 
-            flight.order();
+            results_row.order();
         });
     }
 }

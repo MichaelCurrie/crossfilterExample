@@ -109,7 +109,7 @@ h1, h2 {
   margin-bottom: .4em;
 }
 
-#results-list .flight {
+#results-list .results_list_row {
   line-height: 1.5em;
   background: #eee;
   width: 640px;
@@ -120,7 +120,7 @@ h1, h2 {
   color: #999;
 }
 
-#results-list .flight div {
+#results-list .results_list_row div {
   display: inline-block;
   width: 100px;
 }
