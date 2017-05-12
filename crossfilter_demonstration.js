@@ -77,6 +77,7 @@ function create_crossfilter(data_rows) {
     }); // delay group
     delays.groupId = "delays";
 
+    // USER DIMENSION 2
     // distances dimension
     var distance = data_xfilter.dimension(function(d) {
         return Math.min(1999, d.distance);
@@ -86,7 +87,7 @@ function create_crossfilter(data_rows) {
     }); // distance group
     distances.groupId = "distances";
 
-    // BoE: add new day dimension
+    // Add new day dimension
     var dayNumber = data_xfilter.dimension(function(d) {
         return d.date.getDay();
     });
@@ -94,297 +95,12 @@ function create_crossfilter(data_rows) {
         return d;
     });
 
-    // BoE: add day selection variables
-    var days = {
-            mon: {
-                state: true,
-                name: "days",
-                text: "Monday",
-                type: "workDay",
-                dayNumber: 1,
-                order: 0
-            },
-            tue: {
-                state: true,
-                name: "days",
-                text: "Tuesday",
-                type: "workDay",
-                dayNumber: 2,
-                order: 1
-            },
-            wed: {
-                state: true,
-                name: "days",
-                text: "Wednesday",
-                type: "workDay",
-                dayNumber: 3,
-                order: 2
-            },
-            thu: {
-                state: true,
-                name: "days",
-                text: "Thursday",
-                type: "workDay",
-                dayNumber: 4,
-                order: 3
-            },
-            fri: {
-                state: true,
-                name: "days",
-                text: "Friday",
-                type: "workDay",
-                dayNumber: 5,
-                order: 4
-            },
-            sat: {
-                state: true,
-                name: "days",
-                text: "Saturday",
-                type: "weekendDay",
-                dayNumber: 6,
-                order: 5
-            },
-            sun: {
-                state: true,
-                name: "days",
-                text: "Sunday",
-                type: "weekendDay",
-                dayNumber: 0,
-                order: 6
-            }
-        },
-        workDays = Object.keys(days).filter(function(d) {
-            if (days[d].type == "workDay") return true;
-        }).map(function(d) {
-            return d;
-        }),
-        weekendDays = Object.keys(days).filter(function(d) {
-            if (days[d].type == "weekendDay") return true;
-        }).map(function(d) {
-            return d;
-        }),
-        dayNumbers = (function() {
-            var obj = {};
-            Object.keys(days).forEach(function(d) {
-                var key = days[d].dayNumber;
-                var value = d;
-                obj[key] = value
-            });
-            return obj;
-        })(),
-        dayTypes = {
-            weekendDays: {
-                state: false,
-                name: "dayType",
-                text: "Weekend Days",
-                order: 2
-            },
-            allDays: {
-                state: true,
-                name: "dayType",
-                text: "All Days",
-                order: 0
-            },
-            workDays: {
-                state: false,
-                name: "dayType",
-                text: "Work Days",
-                order: 1
-            },
-            someDays: {
-                state: false,
-                name: "dayType",
-                text: "Some Days",
-                order: 3,
-                last: true
-            }
-        };
 
-    /*
-    // BoE: uncomment this to see the day related variables
-    console.log("workDays", workDays)
-    console.log("weekendDays", weekendDays)
-    console.log("dayNumbers", dayNumbers)
-    */
-
-    // BoE: prep add radio buttons and checkbox data
-    var radioData = Object.keys(dayTypes).map(function(d) {
-        dayTypes[d].value = d;
-        return dayTypes[d];
-    }).sort(function(a, b) {
-        return (a.order > b.order ? 1 : (a.order < b.order) ? -1 : 0)
-    })
-    var checkboxData = Object.keys(days).map(function(d) {
-        days[d].value = d;
-        return days[d];
-    }).sort(function(a, b) {
-        return (a.order > b.order ? 1 : (a.order < b.order) ? -1 : 0)
-    })
-
-    // BoE: create radio buttons
-    //http://stackoverflow.com/questions/19302318/radio-buttons-in-d3-how-to-align-text-correctly-and-select-a-default
-    var fieldset = d3.select("#daySelectionDiv").append("fieldset")
-    fieldset.append("legend").text("Day of Week");
-
-    // BoE: add spans to hold radio buttons
-    var radioSpan = fieldset.selectAll(".radio")
-        .data(radioData)
-        .enter().append("span")
-        .attr("class", "radio")
-        .style("margin-right", function(d) {
-            return d.last == true ? "30px" : "0px"
-        });
-
-    // BoE: add radio button to each span
-    radioSpan.append("input")
-        .attr({
-            type: "radio",
-            name: function(d) {
-                return d.name
-            },
-        })
-        .property({
-            checked: function(d) {
-                return d.state
-            },
-            value: function(d) {
-                return d.value
-            }
-        });
-
-    // BoE: add radio button label
-    radioSpan.append("label")
-        .text(function(d) {
-            return d.text
-        });
-
-    // BoE: add spans to hold checkboxes
-    var checkboxSpan = fieldset.selectAll(".checkbox")
-        .data(checkboxData)
-        .enter().append("span")
-        .attr("class", "checkbox")
-    //.style("margin-right", "10px")
-
-    // BoE: add checkbox to each span
-    checkboxSpan
-        .append("input")
-        //.attr("type", "checkbox")
-        //.attr("name", function(d) { return d.name })
-        .attr({
-            type: "checkbox",
-            name: function(d) {
-                return d.name
-            }
-        })
-        //.property("value", function(d) { return d.value })
-        //.property("checked", function(d) { return d.state })
-        .property({
-            value: function(d) {
-                return d.value
-            },
-            checked: function(d) {
-                return d.state
-            }
-        })
-
-    // BoE: add checkbox label
-    checkboxSpan
-        .append("label")
-        .text(function(d) {
-            return d.text
-        })
-
-
-    // BoE: add radio button event handler
-    d3.selectAll("input[type=radio][name=dayType]")
-        .on("change", function() {
-            var elem = d3.select(this);
-            var dayType = elem.property("value");
-            switch (dayType) {
-                case "allDays":
-                case "someDays":
-                    workDays.forEach(function(day) {
-                        days[day].state = true;
-                    })
-                    weekendDays.forEach(function(day) {
-                        days[day].state = true;
-                    })
-                    break;
-                case "workDays":
-                    workDays.forEach(function(day) {
-                        days[day].state = true;
-                    })
-                    weekendDays.forEach(function(day) {
-                        days[day].state = false;
-                    })
-                    break;
-                case "weekendDays":
-                    workDays.forEach(function(day) {
-                        days[day].state = false;
-                    })
-                    weekendDays.forEach(function(day) {
-                        days[day].state = true;
-                    })
-                    break;
-            }
-
-            updateDaySelection();
-            renderAll();
-        });
-
-    // BoE: init checkboxes and add event handler
-    d3.selectAll("input[type=checkbox][name=days]")
-        .property("checked", function(d, i, a) {
-            var elem = d3.select(this);
-            var day = elem.property("value");
-            //console.log("elem", elem, "day", day, days[day])
-            return days[day].state;
-        })
-        .on("change", function() {
-            var elem = d3.select(this);
-            var checked = elem.property("checked");
-            var day = elem.property("value");
-            days[day].state = checked;
-
-            updateDaySelection();
-            renderAll();
-        })
-
-
-    // BoE: update the state of the day selection radio buttons and checkboxes (called after "change" events from those elements)
-    function updateDaySelection() {
-        // BoE: update checkboxes
-        d3.selectAll("input[type=checkbox][name=days]")
-            .property("checked", function(d, i, a) {
-                var elem = d3.select(this);
-                var day = elem.property("value");
-                return days[day].state;
-            })
-
-        // BoE: process selected days
-        var workDayCount = workDays.reduce(function(p, c) {
-            return (days[c].state) ? p + 1 : p
-        }, 0);
-        var weekendDayCount = weekendDays.reduce(function(p, c) {
-            return (days[c].state) ? p + 1 : p
-        }, 0);
-
-        // BoE: determine day type
-        var dayType = "someDays";
-        if ((workDayCount + weekendDayCount) == 7) dayType = "allDays"
-        else if (workDayCount == 5 && weekendDayCount == 0) dayType = "workDays"
-        else if (workDayCount == 0 && weekendDayCount == 2) dayType = "weekendDays"
-
-        // BoE: set the selected radio button
-        d3.selectAll("input[type=radio][value=" + dayType + "]").property("checked", true);
-
-        // BoE: create/update day number filter
-        dayNumber.filter(function(d) {
-            return days[dayNumbers[d]].state;
-        })
-    }
-
-    // BoE: create canvas element that holds one record per canvas pixel
+    // Date selection radio buttons
+    prepareDateSelection(dayNumber, dayNumbers)
+                                     
+    // DATASET VIEW
+    // Create canvas element that holds one record per canvas pixel
     var canvasWidth = d3.select("body").property("clientWidth") - 10,
         canvasHeight = Math.ceil(data_xfilter.size() / canvasWidth),
         canvas,
@@ -394,13 +110,13 @@ function create_crossfilter(data_rows) {
 
     selected = date.top(Infinity);
 
-    // BoE: get reference to canvas div
+    // Get reference to canvas div
     canvasDiv = d3.select("#canvasDiv")
         .style("padding", "2px")
         .style("width", "100%")
         .style("margin-bottom", "20px")
 
-    // BoE: add div to hold description of canvas content
+    // Add div to hold description of canvas content
     canvasDiv
         .append("div")
         .attr("class", "title")
@@ -408,7 +124,7 @@ function create_crossfilter(data_rows) {
         .style("margin-bottom", "10px")
         .html("<span>Dataset View – Each of the " + formatNumber(data_xfilter.size()) + " pixels represents a data record (White = Selected, Black = Not Selected, Red = Out of Bounds)</span><br><span style='font-style: italic; font-size: 14px; color: red;'>Move the mouse over the canvas below to see individual data records</span>");
 
-    // BoE: add canvas element and mouse handler
+    // Add canvas element and mouse handler
     canvas = canvasDiv
         .append("canvas")
         .attr("width", canvasWidth)
@@ -452,10 +168,10 @@ function create_crossfilter(data_rows) {
             currentLabel.html("&nbsp;");
         })
 
-    // BoE: create label for mousemove
+    // Create label for mousemove
     currentLabel = canvasDiv.append("label").html("&nbsp;");
 
-    // BoE: get context to canvas elem
+    // Get context to canvas elem
     ctx = canvas.node().getContext('2d');
 
     console.log("here we are!")
@@ -600,8 +316,9 @@ function create_crossfilter(data_rows) {
             d.substring(6, 8));
     }
 
-    // BoE: this (window.resetAll) isn't used, therefore
-    //    repurposed this to reset all filters by javascript triggered by a new "a" tag in the DOM
+    // This (window.resetAll) isn't used, therefore
+    //    repurposed this to reset all filters by JavaScript
+    //    triggered by a new "a" tag in the DOM
     window.resetAll = function() {
         var filters = [null, null, null, null];
         filters.forEach(function(d, i) {
@@ -610,7 +327,7 @@ function create_crossfilter(data_rows) {
         Object.keys(days).forEach(function(d) {
             days[d].state = true
         });
-        updateDaySelection();
+        updateDaySelection(dayNumber, dayNumbers);
         renderAll();
     };
 
@@ -688,5 +405,300 @@ function create_crossfilter(data_rows) {
 
             flight.order();
         });
+    }
+}
+
+
+function prepareDateSelection(dayNumber, dayNumbers)
+{
+    // Day selection variables
+    var days = {
+            mon: {
+                state: true,
+                name: "days",
+                text: "Monday",
+                type: "workDay",
+                dayNumber: 1,
+                order: 0
+            },
+            tue: {
+                state: true,
+                name: "days",
+                text: "Tuesday",
+                type: "workDay",
+                dayNumber: 2,
+                order: 1
+            },
+            wed: {
+                state: true,
+                name: "days",
+                text: "Wednesday",
+                type: "workDay",
+                dayNumber: 3,
+                order: 2
+            },
+            thu: {
+                state: true,
+                name: "days",
+                text: "Thursday",
+                type: "workDay",
+                dayNumber: 4,
+                order: 3
+            },
+            fri: {
+                state: true,
+                name: "days",
+                text: "Friday",
+                type: "workDay",
+                dayNumber: 5,
+                order: 4
+            },
+            sat: {
+                state: true,
+                name: "days",
+                text: "Saturday",
+                type: "weekendDay",
+                dayNumber: 6,
+                order: 5
+            },
+            sun: {
+                state: true,
+                name: "days",
+                text: "Sunday",
+                type: "weekendDay",
+                dayNumber: 0,
+                order: 6
+            }
+        },
+        workDays = Object.keys(days).filter(function(d) {
+            if (days[d].type == "workDay") return true;
+        }).map(function(d) {
+            return d;
+        }),
+        weekendDays = Object.keys(days).filter(function(d) {
+            if (days[d].type == "weekendDay") return true;
+        }).map(function(d) {
+            return d;
+        }),
+        dayNumbers = (function() {
+            var obj = {};
+            Object.keys(days).forEach(function(d) {
+                var key = days[d].dayNumber;
+                var value = d;
+                obj[key] = value
+            });
+            return obj;
+        })(),
+        dayTypes = {
+            weekendDays: {
+                state: false,
+                name: "dayType",
+                text: "Weekend Days",
+                order: 2
+            },
+            allDays: {
+                state: true,
+                name: "dayType",
+                text: "All Days",
+                order: 0
+            },
+            workDays: {
+                state: false,
+                name: "dayType",
+                text: "Work Days",
+                order: 1
+            },
+            someDays: {
+                state: false,
+                name: "dayType",
+                text: "Some Days",
+                order: 3,
+                last: true
+            }
+        };
+
+    /*
+    // BoE: uncomment this to see the day related variables
+    console.log("workDays", workDays)
+    console.log("weekendDays", weekendDays)
+    console.log("dayNumbers", dayNumbers)
+    */
+
+    // BoE: prep add radio buttons and checkbox data
+    var radioData = Object.keys(dayTypes).map(function(d) {
+        dayTypes[d].value = d;
+        return dayTypes[d];
+    }).sort(function(a, b) {
+        return (a.order > b.order ? 1 : (a.order < b.order) ? -1 : 0)
+    })
+    var checkboxData = Object.keys(days).map(function(d) {
+        days[d].value = d;
+        return days[d];
+    }).sort(function(a, b) {
+        return (a.order > b.order ? 1 : (a.order < b.order) ? -1 : 0)
+    })
+
+    // Create radio buttons
+    // http://stackoverflow.com/questions/19302318/
+    var fieldset = d3.select("#daySelectionDiv").append("fieldset")
+    fieldset.append("legend").text("Day of Week");
+
+    // Add spans to hold radio buttons
+    var radioSpan = fieldset.selectAll(".radio")
+        .data(radioData)
+        .enter().append("span")
+        .attr("class", "radio")
+        .style("margin-right", function(d) {
+            return d.last == true ? "30px" : "0px"
+        });
+
+    // Add radio button to each span
+    radioSpan.append("input")
+        .attr({
+            type: "radio",
+            name: function(d) {
+                return d.name
+            },
+        })
+        .property({
+            checked: function(d) {
+                return d.state
+            },
+            value: function(d) {
+                return d.value
+            }
+        });
+
+    // Add radio button label
+    radioSpan.append("label")
+        .text(function(d) {
+            return d.text
+        });
+
+    // Add spans to hold checkboxes
+    var checkboxSpan = fieldset.selectAll(".checkbox")
+        .data(checkboxData)
+        .enter().append("span")
+        .attr("class", "checkbox")
+    //.style("margin-right", "10px")
+
+    // Add checkbox to each span
+    checkboxSpan
+        .append("input")
+        //.attr("type", "checkbox")
+        //.attr("name", function(d) { return d.name })
+        .attr({
+            type: "checkbox",
+            name: function(d) {
+                return d.name
+            }
+        })
+        //.property("value", function(d) { return d.value })
+        //.property("checked", function(d) { return d.state })
+        .property({
+            value: function(d) {
+                return d.value
+            },
+            checked: function(d) {
+                return d.state
+            }
+        })
+
+    // Add checkbox label
+    checkboxSpan
+        .append("label")
+        .text(function(d) {
+            return d.text
+        })
+
+
+    // Add radio button event handler
+    d3.selectAll("input[type=radio][name=dayType]")
+        .on("change", function() {
+            var elem = d3.select(this);
+            var dayType = elem.property("value");
+            switch (dayType) {
+                case "allDays":
+                case "someDays":
+                    workDays.forEach(function(day) {
+                        days[day].state = true;
+                    })
+                    weekendDays.forEach(function(day) {
+                        days[day].state = true;
+                    })
+                    break;
+                case "workDays":
+                    workDays.forEach(function(day) {
+                        days[day].state = true;
+                    })
+                    weekendDays.forEach(function(day) {
+                        days[day].state = false;
+                    })
+                    break;
+                case "weekendDays":
+                    workDays.forEach(function(day) {
+                        days[day].state = false;
+                    })
+                    weekendDays.forEach(function(day) {
+                        days[day].state = true;
+                    })
+                    break;
+            }
+
+            updateDaySelection();
+            renderAll();
+        });
+
+    // Init checkboxes and add event handler
+    d3.selectAll("input[type=checkbox][name=days]")
+        .property("checked", function(d, i, a) {
+            var elem = d3.select(this);
+            var day = elem.property("value");
+            //console.log("elem", elem, "day", day, days[day])
+            return days[day].state;
+        })
+        .on("change", function() {
+            var elem = d3.select(this);
+            var checked = elem.property("checked");
+            var day = elem.property("value");
+            days[day].state = checked;
+
+            updateDaySelection(dayNumber, dayNumbers);
+            renderAll();
+        })
+
+
+    // Update the state of the day selection radio buttons and checkboxes
+    // (called after "change" events from those elements)
+    function updateDaySelection(dayNumber, dayNumbers) {
+        // BoE: update checkboxes
+        d3.selectAll("input[type=checkbox][name=days]")
+            .property("checked", function(d, i, a) {
+                var elem = d3.select(this);
+                var day = elem.property("value");
+                return days[day].state;
+            })
+
+        // BoE: process selected days
+        var workDayCount = workDays.reduce(function(p, c) {
+            return (days[c].state) ? p + 1 : p
+        }, 0);
+        var weekendDayCount = weekendDays.reduce(function(p, c) {
+            return (days[c].state) ? p + 1 : p
+        }, 0);
+
+        // BoE: determine day type
+        var dayType = "someDays";
+        if ((workDayCount + weekendDayCount) == 7) dayType = "allDays"
+        else if (workDayCount == 5 && weekendDayCount == 0) dayType = "workDays"
+        else if (workDayCount == 0 && weekendDayCount == 2) dayType = "weekendDays"
+
+        // BoE: set the selected radio button
+        d3.selectAll("input[type=radio][value=" + dayType + "]").property("checked", true);
+
+        // Create/update day number filter
+        dayNumber.filter(function(d) {
+            return days[dayNumbers[d]].state;
+        })
     }
 }
